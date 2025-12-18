@@ -52,6 +52,8 @@ def fetch_habits():
     rows = cursor.fetchall()
     conn.close()
     return rows
+from datetime import datetime
+
 def fetch_completed_dates(habit_id):
     conn = get_connection()
     cursor = conn.cursor()
@@ -66,4 +68,7 @@ def fetch_completed_dates(habit_id):
     rows = cursor.fetchall()
     conn.close()
 
-    return [row[0] for row in rows]
+    return [
+        datetime.strptime(row[0], "%Y-%m-%d").date()
+        for row in rows
+    ]
