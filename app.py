@@ -161,7 +161,14 @@ with tab_analytics:
         )
 
     st.divider()
-    st.subheader("🧠 Insights")
+
+    st.subheader(
+        "🧠 Insights",
+        help=(
+            "Insights are generated only when enough data is available. "
+            "They are based on statistically meaningful patterns, not single-day changes."
+        )
+    )
 
     trend_insight = generate_global_trend_insight()
     weekday_insight = generate_weekday_weekend_insight()
@@ -173,6 +180,26 @@ with tab_analytics:
         st.write(weekday_insight)
 
     st.divider()
+
+    with st.expander("Why am I seeing these insights?"):
+        st.markdown("""
+**How insights are generated:**
+
+- **Trend insight**  
+  Compares average completion rates across two time periods.  
+  Shown only if the change is large enough to be meaningful.
+
+- **Weekday vs Weekend**  
+  Compares consistency on weekdays and weekends.  
+  Requires sufficient data from both categories.
+
+- **Habit stability**  
+  Measures how consistently a habit is completed over time.  
+  Stable habits vary less day-to-day; volatile ones vary more.
+
+If there isn’t enough reliable data, no insight is shown.
+""")
+
     st.subheader("Habit Analytics")
 
     if not habits:
@@ -182,7 +209,13 @@ with tab_analytics:
             with st.expander(name):
                 habit_insight = generate_habit_stability_insight(habit_id, name)
                 if habit_insight:
-                    st.caption(habit_insight)
+                    st.caption(
+                        habit_insight,
+                        help=(
+                            "Habit stability is based on how often this habit is completed "
+                            "over time. More variation means lower stability."
+                        )
+                    )
 
                 logs = fetch_logs_last_n_days(habit_id, days=days)
 
@@ -202,7 +235,6 @@ with tab_analytics:
                         width="stretch",
                         key=f"weekly_{habit_id}"
                     )
-                  
 
 # ================= HISTORY TAB =================
 with tab_history:
