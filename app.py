@@ -23,6 +23,7 @@ from visualizations.charts import (
 )
 from services.insight_service import (
     generate_global_trend_insight,
+    generate_insight_attribution,
     generate_weekday_weekend_insight,
     generate_habit_stability_insight
 )
@@ -229,7 +230,13 @@ If there isn’t enough reliable data, no insight is shown.
                     )
 
                     if attribution:
-                        st.caption(f"ℹ️ {attribution}")
+                        st.caption(
+                            f"ℹ️ {attribution}",
+                            help=(
+                                "Add short reflection notes in the History tab to help "
+                                "connect patterns with real-life context."
+                            )
+                        )
 
                 logs = fetch_logs_last_n_days(habit_id, days=days)
 
