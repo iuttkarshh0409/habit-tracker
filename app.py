@@ -1,9 +1,5 @@
 import streamlit as st
 import pandas as pd
-from services.global_analytics_service import get_global_stats
-from services.export_service import export_logs_to_csv
-
-
 
 from db.db_utils import (
     insert_habit,
@@ -14,39 +10,43 @@ from db.db_utils import (
 from services.streak_service import get_current_streak
 from services.checkin_service import check_in_today
 from services.consistency_service import get_consistency_percentage
+from services.global_analytics_service import get_global_stats
+from services.export_service import export_logs_to_csv
 from visualizations.charts import streak_timeline, weekly_completion
 
+
+# ---------------- PAGE SETUP ----------------
 st.title("Habit Tracker")
 
 tab_overview, tab_analytics, tab_history = st.tabs(
     ["Overview", "Analytics", "History"]
 )
 
-
-
 habits = fetch_habits()
 
+
+# ---------------- OVERVIEW TAB ----------------
 with tab_overview:
+    # Top row: Export button
     top_left, _ = st.columns([1, 5])
 
     with top_left:
-        df = export_logs_to_csv()
-        if df is not None:
+        df_export = export_logs_to_csv()
+        if df_export is not None:
             st.download_button(
-                label="⬇️ Export CSV",
-                data=df.to_csv(index=False),
+                label="⬇️ Export Data",
+                data=df_export.to_csv(index=False),
                 file_name="habit_logs.csv",
                 mime="text/csv",
                 key="export_csv_btn"
             )
 
+    # Global analytics
     stats = get_global_stats()
-
     if stats:
         st.subheader("📊 Overall Insights")
 
         col1, col2, col3, col4 = st.columns(4)
-
         col1.metric("Total Habits", stats["total_habits"])
         col2.metric("Overall Consistency", f'{stats["overall_consistency"]}%')
         col3.metric(
@@ -62,10 +62,7 @@ with tab_overview:
 
         st.divider()
 
-
-# ---------------- OVERVIEW TAB ----------------
-with tab_overview:
-    
+    # Add habit
     st.subheader("Add New Habit")
 
     habit_name = st.text_input("Habit name", key="add_habit_input")
@@ -77,8 +74,36 @@ with tab_overview:
             st.rerun()
 
     st.divider()
+
+    # Sorting
     st.subheader("Your Habits")
 
+    sort_option = st.selectbox(
+        "Sort habits by",
+        [
+            "Streak (high → low)",
+            "Consistency (high → low)",
+            "Name (A → Z)"
+        ],
+        key="sort_habits_select"
+    )
+
+    if sort_option == "Streak (high → low)":
+        habits = sorted(
+            habits,
+            key=lambda h: get_current_streak(h[0]),
+            reverse=True
+        )
+    elif sort_option == "Consistency (high → low)":
+        habits = sorted(
+            habits,
+            key=lambda h: get_consistency_percentage(h[0]),
+            reverse=True
+        )
+    else:  # Name
+        habits = sorted(habits, key=lambda h: h[1].lower())
+
+    # Habit list
     for habit_id, name, _, _ in habits:
         streak = get_current_streak(habit_id)
         consistency = get_consistency_percentage(habit_id)
@@ -133,7 +158,6 @@ with tab_analytics:
 
             st.divider()
 
-    
 
 # ---------------- HISTORY TAB ----------------
 with tab_history:
