@@ -21,6 +21,12 @@ from visualizations.charts import (
     weekly_completion,
     global_completion_trend
 )
+from services.insight_service import (
+    generate_global_trend_insight,
+    generate_weekday_weekend_insight,
+    generate_habit_stability_insight
+)
+
 
 # ---------------- PAGE SETUP ----------------
 st.title("Habit Tracker")
@@ -148,16 +154,36 @@ with tab_analytics:
     trend_fig = global_completion_trend(rows)
 
     if trend_fig:
-        st.plotly_chart(trend_fig, width="stretch", key="global_trend_chart")
+        st.plotly_chart(
+            trend_fig,
+            width="stretch",
+            key="global_trend_chart"
+        )
 
     st.divider()
+    st.subheader("🧠 Insights")
 
+    trend_insight = generate_global_trend_insight()
+    weekday_insight = generate_weekday_weekend_insight()
+
+    if trend_insight:
+        st.write(trend_insight)
+
+    if weekday_insight:
+        st.write(weekday_insight)
+
+    st.divider()
     st.subheader("Habit Analytics")
+
     if not habits:
         st.info("Add habits to see analytics")
     else:
         for habit_id, name, _, _ in habits:
             with st.expander(name):
+                habit_insight = generate_habit_stability_insight(habit_id, name)
+                if habit_insight:
+                    st.caption(habit_insight)
+
                 logs = fetch_logs_last_n_days(habit_id, days=days)
 
                 timeline_fig = streak_timeline(logs)
@@ -176,6 +202,7 @@ with tab_analytics:
                         width="stretch",
                         key=f"weekly_{habit_id}"
                     )
+                  
 
 # ================= HISTORY TAB =================
 with tab_history:
