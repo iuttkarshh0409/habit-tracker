@@ -16,6 +16,8 @@ from services.export_service import export_logs_to_csv
 from visualizations.charts import streak_timeline, weekly_completion
 from db.db_utils import fetch_daily_completion_rate
 from visualizations.charts import global_completion_trend
+from services.export_service import export_habit_logs_to_csv
+
 
 
 # ---------------- PAGE SETUP ----------------
@@ -111,7 +113,7 @@ with tab_overview:
         streak = get_current_streak(habit_id)
         consistency = get_consistency_percentage(habit_id)
 
-        col1, col2, col3 = st.columns([4, 1, 1])
+        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
 
         with col1:
             st.write(
@@ -128,6 +130,18 @@ with tab_overview:
             if st.button("❌", key=f"miss_{habit_id}"):
                 check_in_today(habit_id, False)
                 st.rerun()
+
+        with col4:
+           df_habit = export_habit_logs_to_csv(habit_id)
+           if df_habit is not None:
+              st.download_button(
+              label="📄",
+              data=df_habit.to_csv(index=False),
+             file_name=f"{name.replace(' ', '_').lower()}_history.csv",
+             mime="text/csv",
+             key=f"export_habit_{habit_id}"
+             )
+
 
 
 # ---------------- ANALYTICS TAB ----------------
