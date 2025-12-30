@@ -26,6 +26,11 @@ from services.insight_service import (
     generate_weekday_weekend_insight,
     generate_habit_stability_insight
 )
+from services.reflection_service import (
+    save_reflection,
+    get_reflection
+)
+
 
 
 # ---------------- PAGE SETUP ----------------
@@ -248,10 +253,30 @@ with tab_history:
             logs = fetch_logs_for_habit(habit_id)
 
             if logs:
-                df = pd.DataFrame(logs, columns=["Date", "Status"])
-                df["Status"] = df["Status"].map({1: "Completed", 0: "Missed"})
-                st.dataframe(df, use_container_width=True)
+                for date, status in logs:
+                    status_text = "Completed" if status == 1 else "Missed"
+                    st.write(f"**{date}** — {status_text}")
+
+                    existing_note = get_reflection(habit_id, date)
+
+                    with st.expander("📝 Add context", expanded=False):
+                        note = st.text_area(
+                            "Reflection (optional)",
+                            value=existing_note or "",
+                            max_chars=120,
+                            placeholder="Add context (optional)",
+                            key=f"note_{habit_id}_{date}"
+                        )
+
+                        if st.button(
+                            "Save note",
+                            key=f"save_note_{habit_id}_{date}"
+                        ):
+                            save_reflection(habit_id, date, note)
+                            st.success("Note saved")
+                            st.rerun()
+
+                st.divider()
             else:
                 st.caption("No logs yet")
-
-            st.divider()
+                st.divider()

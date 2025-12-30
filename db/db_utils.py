@@ -175,3 +175,32 @@ def fetch_daily_completion_rate(days=30):
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+def upsert_reflection_note(habit_id, date, note):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        INSERT INTO reflection_notes (habit_id, date, note)
+        VALUES (?, ?, ?)
+        ON CONFLICT(habit_id, date)
+        DO UPDATE SET note = excluded.note
+    """, (habit_id, date, note))
+
+    conn.commit()
+    conn.close()
+
+
+def fetch_reflection_note(habit_id, date):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT note
+        FROM reflection_notes
+        WHERE habit_id = ? AND date = ?
+    """, (habit_id, date))
+
+    row = cursor.fetchone()
+    conn.close()
+    return row[0] if row else None
