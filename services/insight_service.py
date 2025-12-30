@@ -9,33 +9,38 @@ from db.db_utils import (
 from services.consistency_service import get_consistency_percentage
 
 
-def generate_global_trend_insight():
-    recent = fetch_daily_completion_rate(days=7)
-    previous = fetch_daily_completion_rate(days=14)
-
-    if len(previous) < 14 or len(recent) < 7:
+def generate_global_trend_insight(min_days=14, min_change_pct=8):
+    recent = fetch_daily_completion_rate(days=min_days)
+    if len(recent) < min_days:
         return None
 
-    recent_avg = sum(r[1] / r[2] for r in recent[-7:]) / 7
-    previous_avg = sum(r[1] / r[2] for r in previous[:7]) / 7
+    first_half = recent[:min_days // 2]
+    second_half = recent[min_days // 2:]
 
-    diff = (recent_avg - previous_avg) * 100
+    def avg_rate(rows):
+        return sum(r[1] / r[2] for r in rows) / len(rows)
 
-    if diff > 5:
-        return "📈 Your overall habit completion improved compared to last week."
-    elif diff < -5:
-        return "📉 Your overall habit completion declined compared to last week."
+    first_avg = avg_rate(first_half)
+    second_avg = avg_rate(second_half)
+
+    diff_pct = (second_avg - first_avg) * 100
+
+    if abs(diff_pct) < min_change_pct:
+        return None
+
+    if diff_pct > 0:
+        return "📈 Your overall habit completion has meaningfully improved recently."
     else:
-        return "➖ Your overall habit completion is stable week over week."
+        return "📉 Your overall habit completion has meaningfully declined recently."
 
 
-def generate_weekday_weekend_insight():
+
+def generate_weekday_weekend_insight(min_points=6):
     rows = fetch_daily_completion_rate(days=30)
     if not rows:
         return None
 
-    weekday = []
-    weekend = []
+    weekday, weekend = [], []
 
     for date_str, completed, total in rows:
         date = datetime.strptime(date_str, "%Y-%m-%d")
@@ -46,18 +51,24 @@ def generate_weekday_weekend_insight():
         else:
             weekend.append(rate)
 
-    if not weekday or not weekend:
+    if len(weekday) < min_points or len(weekend) < min_points:
         return None
 
-    if sum(weekday)/len(weekday) > sum(weekend)/len(weekend):
+    weekday_avg = sum(weekday) / len(weekday)
+    weekend_avg = sum(weekend) / len(weekend)
+
+    if abs(weekday_avg - weekend_avg) < 0.1:
+        return None
+
+    if weekday_avg > weekend_avg:
         return "📅 You tend to be more consistent on weekdays than weekends."
     else:
         return "📅 You tend to be more consistent on weekends than weekdays."
 
 
-def generate_habit_stability_insight(habit_id, habit_name):
+def generate_habit_stability_insight(habit_id, habit_name, min_logs=10):
     logs = fetch_logs_for_habit(habit_id)
-    if len(logs) < 7:
+    if len(logs) < min_logs:
         return None
 
     values = [status for _, status in logs[-30:]]
@@ -67,9 +78,11 @@ def generate_habit_stability_insight(habit_id, habit_name):
     except:
         return None
 
-    if v < 0.1:
+    if v < 0.08:
         return f"🧘 {habit_name} is very stable."
-    elif v < 0.25:
-        return f"⚖️ {habit_name} shows some inconsistency."
+    elif v < 0.2:
+        return f"⚖️ {habit_name} shows moderate variability."
+    elif v < 0.35:
+        return f"🌊 {habit_name} is inconsistent."
     else:
         return f"🌪️ {habit_name} is highly volatile."
