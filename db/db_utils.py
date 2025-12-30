@@ -142,3 +142,18 @@ def fetch_all_logs_last_n_days(days=30):
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+def fetch_all_logs_with_habits():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT h.name, l.date, l.status
+        FROM logs l
+        JOIN habits h ON l.habit_id = h.id
+        ORDER BY l.date DESC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows

@@ -1,6 +1,8 @@
 import streamlit as st
 import pandas as pd
 from services.global_analytics_service import get_global_stats
+from services.export_service import export_logs_to_csv
+
 
 
 from db.db_utils import (
@@ -20,9 +22,24 @@ tab_overview, tab_analytics, tab_history = st.tabs(
     ["Overview", "Analytics", "History"]
 )
 
+
+
 habits = fetch_habits()
 
 with tab_overview:
+    top_left, _ = st.columns([1, 5])
+
+    with top_left:
+        df = export_logs_to_csv()
+        if df is not None:
+            st.download_button(
+                label="⬇️ Export CSV",
+                data=df.to_csv(index=False),
+                file_name="habit_logs.csv",
+                mime="text/csv",
+                key="export_csv_btn"
+            )
+
     stats = get_global_stats()
 
     if stats:
@@ -48,6 +65,7 @@ with tab_overview:
 
 # ---------------- OVERVIEW TAB ----------------
 with tab_overview:
+    
     st.subheader("Add New Habit")
 
     habit_name = st.text_input("Habit name", key="add_habit_input")
@@ -83,6 +101,7 @@ with tab_overview:
                 check_in_today(habit_id, False)
                 st.rerun()
 
+
 # ---------------- ANALYTICS TAB ----------------
 with tab_analytics:
     st.subheader("Habit Analytics")
@@ -113,6 +132,8 @@ with tab_analytics:
                 )
 
             st.divider()
+
+    
 
 # ---------------- HISTORY TAB ----------------
 with tab_history:
