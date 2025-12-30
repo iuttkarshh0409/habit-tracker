@@ -38,3 +38,26 @@ def weekly_completion(logs):
         title="Weekly Habit Completion",
         labels={"status": "Days Completed"}
     )
+
+
+def global_completion_trend(rows):
+    if not rows:
+        return None
+
+    df = pd.DataFrame(
+        rows,
+        columns=["date", "completed", "total"]
+    )
+
+    df["date"] = pd.to_datetime(df["date"])
+    df["completion_rate"] = (df["completed"] / df["total"]) * 100
+
+    return px.line(
+        df,
+        x="date",
+        y="completion_rate",
+        markers=True,
+        title="Overall Habit Completion Trend",
+        labels={"completion_rate": "Completion %"},
+        range_y=[0, 100]
+    )

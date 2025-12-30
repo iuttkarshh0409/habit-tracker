@@ -157,3 +157,21 @@ def fetch_all_logs_with_habits():
     rows = cursor.fetchall()
     conn.close()
     return rows
+def fetch_daily_completion_rate(days=30):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT
+            l.date,
+            SUM(l.status) as completed,
+            COUNT(*) as total
+        FROM logs l
+        WHERE l.date >= DATE('now', ?)
+        GROUP BY l.date
+        ORDER BY l.date
+    """, (f'-{days} days',))
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows

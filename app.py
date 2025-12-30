@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 
+
 from db.db_utils import (
     insert_habit,
     fetch_habits,
@@ -13,6 +14,8 @@ from services.consistency_service import get_consistency_percentage
 from services.global_analytics_service import get_global_stats
 from services.export_service import export_logs_to_csv
 from visualizations.charts import streak_timeline, weekly_completion
+from db.db_utils import fetch_daily_completion_rate
+from visualizations.charts import global_completion_trend
 
 
 # ---------------- PAGE SETUP ----------------
@@ -128,7 +131,22 @@ with tab_overview:
 
 
 # ---------------- ANALYTICS TAB ----------------
+
 with tab_analytics:
+    st.subheader("📈 Global Trend")
+
+    rows = fetch_daily_completion_rate(days=30)
+    trend_fig = global_completion_trend(rows)
+
+    if trend_fig:
+        st.plotly_chart(
+            trend_fig,
+            width="stretch",
+            key="global_trend_chart"
+        )
+
+    st.divider()
+
     st.subheader("Habit Analytics")
 
     if not habits:
