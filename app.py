@@ -8,6 +8,8 @@ from db.db_utils import (
     fetch_logs_for_habit,
     fetch_daily_completion_rate
 )
+
+from services.habit_service import archive
 from services.streak_service import get_current_streak
 from services.checkin_service import check_in_today
 from services.consistency_service import get_consistency_percentage
@@ -114,7 +116,7 @@ with tab_overview:
         streak = get_current_streak(habit_id)
         consistency = get_consistency_percentage(habit_id, days=30)
 
-        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
+        col1, col2, col3, col4, col5 = st.columns([4, 1, 1, 1, 1])
 
         with col1:
             st.write(
@@ -142,6 +144,12 @@ with tab_overview:
                     "text/csv",
                     key=f"export_habit_{habit_id}"
                 )
+
+        with col5:
+            if st.button("🗄️", key=f"archive_{habit_id}"):
+                archive(habit_id)
+                st.success(f"Habit '{name}' archived")
+                st.rerun()
 
 # ================= ANALYTICS TAB =================
 with tab_analytics:

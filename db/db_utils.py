@@ -39,6 +39,7 @@ def log_habit_day(habit_id, log_date, status):
         pass
     finally:
         conn.close()
+
 def fetch_habits():
     conn = get_connection()
     cursor = conn.cursor()
@@ -46,12 +47,14 @@ def fetch_habits():
     cursor.execute("""
         SELECT id, name, frequency, created_at
         FROM habits
+        where is_active = 1
         ORDER BY created_at
     """)
 
     rows = cursor.fetchall()
     conn.close()
     return rows
+
 from datetime import datetime
 
 def fetch_completed_dates(habit_id):
@@ -219,3 +222,17 @@ def fetch_reflection_notes_in_range(habit_id, start_date, end_date):
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+def archive_habit(habit_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE habits
+        SET is_active = 0
+        WHERE id = ?
+    """, (habit_id,))
+
+    conn.commit()
+    conn.close()
+
