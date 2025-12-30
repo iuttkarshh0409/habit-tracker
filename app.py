@@ -135,28 +135,26 @@ with tab_analytics:
         st.info("Add habits to see analytics")
     else:
         for habit_id, name, _, _ in habits:
-            st.markdown(f"### {name}")
+            with st.expander(name):
+                logs = fetch_logs_last_n_days(habit_id)
 
-            logs = fetch_logs_last_n_days(habit_id)
+                timeline_fig = streak_timeline(logs)
+                weekly_fig = weekly_completion(logs)
 
-            timeline_fig = streak_timeline(logs)
-            weekly_fig = weekly_completion(logs)
+                if timeline_fig:
+                    st.plotly_chart(
+                        timeline_fig,
+                        width="stretch",
+                        key=f"timeline_{habit_id}"
+                    )
 
-            if timeline_fig:
-                st.plotly_chart(
-                    timeline_fig,
-                    width="stretch",
-                    key=f"timeline_{habit_id}"
-                )
+                if weekly_fig:
+                    st.plotly_chart(
+                        weekly_fig,
+                        width="stretch",
+                        key=f"weekly_{habit_id}"
+                    )
 
-            if weekly_fig:
-                st.plotly_chart(
-                    weekly_fig,
-                    width="stretch",
-                    key=f"weekly_{habit_id}"
-                )
-
-            st.divider()
 
 
 # ---------------- HISTORY TAB ----------------
