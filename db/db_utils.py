@@ -124,3 +124,21 @@ def fetch_logs_for_habit(habit_id):
     rows = cursor.fetchall()
     conn.close()
     return rows
+
+from datetime import date, timedelta
+
+def fetch_all_logs_last_n_days(days=30):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    start_date = date.today() - timedelta(days=days - 1)
+
+    cursor.execute("""
+        SELECT habit_id, status
+        FROM logs
+        WHERE date >= ?
+    """, (start_date,))
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows

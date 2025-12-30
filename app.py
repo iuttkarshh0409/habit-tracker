@@ -1,5 +1,7 @@
 import streamlit as st
 import pandas as pd
+from services.global_analytics_service import get_global_stats
+
 
 from db.db_utils import (
     insert_habit,
@@ -19,6 +21,30 @@ tab_overview, tab_analytics, tab_history = st.tabs(
 )
 
 habits = fetch_habits()
+
+with tab_overview:
+    stats = get_global_stats()
+
+    if stats:
+        st.subheader("📊 Overall Insights")
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        col1.metric("Total Habits", stats["total_habits"])
+        col2.metric("Overall Consistency", f'{stats["overall_consistency"]}%')
+        col3.metric(
+            "Most Consistent",
+            stats["most_consistent"],
+            f'{stats["most_consistent_value"]}%'
+        )
+        col4.metric(
+            "Longest Streak",
+            stats["longest_streak"],
+            f'{stats["longest_streak_value"]} days'
+        )
+
+        st.divider()
+
 
 # ---------------- OVERVIEW TAB ----------------
 with tab_overview:
