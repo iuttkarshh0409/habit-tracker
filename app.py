@@ -213,6 +213,7 @@ If there isn’t enough reliable data, no insight is shown.
         for habit_id, name, _, _ in habits:
             with st.expander(name):
                 habit_insight = generate_habit_stability_insight(habit_id, name)
+
                 if habit_insight:
                     st.caption(
                         habit_insight,
@@ -221,6 +222,14 @@ If there isn’t enough reliable data, no insight is shown.
                             "over time. More variation means lower stability."
                         )
                     )
+
+                    attribution = generate_insight_attribution(
+                        habit_id,
+                        days=days
+                    )
+
+                    if attribution:
+                        st.caption(f"ℹ️ {attribution}")
 
                 logs = fetch_logs_last_n_days(habit_id, days=days)
 

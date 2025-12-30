@@ -86,3 +86,38 @@ def generate_habit_stability_insight(habit_id, habit_name, min_logs=10):
         return f"🌊 {habit_name} is inconsistent."
     else:
         return f"🌪️ {habit_name} is highly volatile."
+
+from collections import Counter
+from datetime import datetime, timedelta
+from db.db_utils import fetch_reflection_notes_in_range
+
+
+def generate_insight_attribution(habit_id, days=30, min_notes=2):
+    end_date = datetime.today().date()
+    start_date = end_date - timedelta(days=days)
+
+    notes = fetch_reflection_notes_in_range(
+        habit_id,
+        start_date.isoformat(),
+        end_date.isoformat()
+    )
+
+    if len(notes) < min_notes:
+        return None
+
+    # Normalize notes (simple keyword extraction)
+    keywords = []
+    for _, note in notes:
+        words = note.lower().split()
+        keywords.extend(words)
+
+    if not keywords:
+        return None
+
+    common = Counter(keywords).most_common(1)
+    word, count = common[0]
+
+    if count < min_notes:
+        return None
+
+    return f"{count} entries coincided with notes mentioning “{word}”."

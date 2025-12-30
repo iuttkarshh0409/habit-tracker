@@ -204,3 +204,18 @@ def fetch_reflection_note(habit_id, date):
     row = cursor.fetchone()
     conn.close()
     return row[0] if row else None
+
+def fetch_reflection_notes_in_range(habit_id, start_date, end_date):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT date, note
+        FROM reflection_notes
+        WHERE habit_id = ?
+          AND date BETWEEN ? AND ?
+    """, (habit_id, start_date, end_date))
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
