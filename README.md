@@ -1,23 +1,24 @@
 # Habit Tracker & Personal Analytics Dashboard
 
-A data-driven habit tracking application built in Python that allows users to track daily habits, analyze consistency, and visualize behavioral trends through an interactive dashboard.
+A data-driven habit tracking application built in Python that helps users track daily habits, analyze long-term consistency, and understand behavioral patterns through explainable analytics and contextual insights.
 
-This project emphasizes **data transparency**, **clean architecture**, and **meaningful analytics** rather than gamification or paywalled insights.
+This project prioritizes **data transparency**, **clean architecture**, and **interpretability** over gamification, notifications, or streak pressure.
 
 ---
 
 ## 📌 Overview
 
-Most habit-tracking apps focus on streak pressure while hiding user data behind subscriptions.  
-This project takes a different approach: it treats habits as data, not guilt machines.
+Most habit-tracking apps optimize for streaks, motivation hacks, or paywalled insights.  
+This project takes a different approach:
 
-The application enables users to:
-- Log daily habit outcomes  
-- Compute streaks dynamically  
-- Measure long-term consistency  
-- Explore progress through interactive visualizations  
+**Habits are treated as data, not as moral judgments.**
 
-The goal is to demonstrate practical Python application development using persistent storage, modular services, and data visualization.
+The application focuses on:
+- Honest measurement over encouragement  
+- Long-term patterns over short-term streaks  
+- Context over guilt  
+
+It is designed as a practical Python project demonstrating modular architecture, persistent storage, analytics, and responsible interpretation of user data.
 
 ---
 
@@ -25,28 +26,51 @@ The goal is to demonstrate practical Python application development using persis
 
 ### Habit Management
 - Create and manage multiple daily habits  
-- Persistent storage using a relational database  
+- Persistent storage using a relational SQLite database  
 
 ### Daily Check-In System
-- Log each habit as **Completed** or **Missed** per day  
-- Duplicate entries per day prevented at the database level  
+- Log each habit as **Completed** or **Missed**  
+- One entry per habit per day enforced at the database level  
 
 ### Automated Streak Calculation
 - Current streaks computed dynamically from log history  
-- No redundant or stored streak values, ensuring data integrity  
+- No stored or duplicated streak values, ensuring data integrity  
 
 ### Consistency Analytics
-- 30-day consistency percentage per habit  
-- Separates short-term streaks from long-term behavior patterns  
+- 7-day and 30-day consistency views  
+- Separates short-term momentum from long-term behavior  
+- Avoids over-reliance on streaks alone  
 
 ### Interactive Analytics Dashboard
-- Timeline view of habit completion  
-- Weekly completion summaries  
-- Built using interactive Plotly charts  
+- Global completion trends across all habits  
+- Per-habit analytics with expandable sections  
+- Built using interactive Plotly visualizations  
+
+### Insight Engine (Explainable & Conservative)
+- Insights generated only when statistically meaningful  
+- Confidence thresholds to avoid noise and overfitting  
+- No insights shown when data is insufficient  
+- Clear *“Why am I seeing this?”* explanations for transparency  
+
+### Reflection Notes (Context Without Judgment)
+- Optional habit-per-day reflection notes  
+- Lightweight context such as *“Travel day”* or *“Exam week”*  
+- Notes never affect streaks or consistency calculations  
+- Used only for contextual interpretation  
+
+### Insight Attribution Using Notes
+- Insights may reference reflection notes when patterns align  
+- Uses correlation language (“coincided with”), not causation  
+- Gracefully suppressed when attribution is inconclusive  
 
 ### History View
-- Transparent, tabular view of all habit logs  
-- Raw data always accessible to the user  
+- Transparent chronological view of all habit logs  
+- Reflection notes displayed alongside entries  
+- Raw data always accessible  
+
+### Data Export
+- Global CSV export of all habit logs  
+- Per-habit CSV export  
 
 ---
 
@@ -55,45 +79,44 @@ The goal is to demonstrate practical Python application development using persis
 - **Language:** Python 3.10+  
 - **UI Framework:** Streamlit  
 - **Database:** SQLite  
-- **Visualization:** Plotly (primary), Matplotlib & Seaborn (supporting)  
-- **Architecture:** Modular service-based design  
-- **Deployment (Optional):** Streamlit Cloud  
+- **Visualization:** Plotly  
+- **Architecture:** Modular, service-oriented design  
+- **Deployment (Optional):** Streamlit Community Cloud  
 
 ---
 
 ## 🏗 Project Architecture
 
-The project follows **Separation of Concerns**, keeping UI, business logic, database access, and visualization isolated.
+The project follows **Separation of Concerns**, keeping UI, business logic, database access, analytics, and interpretation clearly isolated.
 
 ```
 habit-tracker/
 │
-├── app.py                     # Streamlit application entry point
-├── requirements.txt           # Project dependencies
+├── app.py
+├── requirements.txt
 ├── README.md
 │
 ├── db/
-│   ├── __init__.py
-│   ├── db_utils.py            # Database helpers & queries
-│   └── habits.db              # SQLite database (sample/demo data)
+│   ├── db_utils.py
+│   └── habits.db
 │
 ├── services/
-│   ├── __init__.py
-│   ├── checkin_service.py     # Daily habit check-in logic
-│   ├── streaks.py             # Core streak calculation logic
-│   ├── streak_service.py      # DB → streak integration
-│   └── consistency_service.py # Consistency percentage logic
+│   ├── checkin_service.py
+│   ├── streak_service.py
+│   ├── consistency_service.py
+│   ├── global_analytics_service.py
+│   ├── export_service.py
+│   ├── insight_service.py
+│   └── reflection_service.py
 │
 ├── visualizations/
-│   ├── __init__.py
-│   └── charts.py              # Plotly chart generators
+│   └── charts.py
 │
 ├── models/
-│   └── __init__.py            # Reserved for future domain models
+│   └── __init__.py
 │
 └── tests/
-    ├── __init__.py
-    └── seed_data.py           # Development-only seed data script
+    └── seed_data.py
 ```
 
 ---
@@ -102,36 +125,39 @@ habit-tracker/
 
 ### Streak
 - Measures consecutive completed days up to today  
-- Resets automatically when a day is missed  
+- Automatically resets when a day is missed  
 
 ### Consistency Percentage
-- Measures habit completion over the last 30 days  
+- Completion rate over a selected window (7 or 30 days)
 
 **Formula**
 ```
 (Completed Days ÷ Total Days) × 100
 ```
 
-Provides a more realistic picture of long-term behavior.
+This provides a more realistic view of behavior than streaks alone.
 
-This dual-metric approach avoids over-reliance on streaks alone.
+### Insights
+- Generated only when sufficient data exists  
+- Suppressed when patterns are weak or inconclusive  
+- Always accompanied by transparent explanations  
 
 ---
 
 ## ▶️ Running the Project Locally
 
-1. Clone the repository
+Clone the repository:
 ```
 git clone <repo-url>
 cd habit-tracker
 ```
 
-2. Install dependencies
+Install dependencies:
 ```
 pip install -r requirements.txt
 ```
 
-3. Run the app
+Run the application:
 ```
 streamlit run app.py
 ```
@@ -140,44 +166,39 @@ streamlit run app.py
 
 ## 🧪 Sample Data (Optional)
 
-For development and visualization testing, a seed script is included:
+For development and visualization testing:
 ```
 python -m tests.seed_data
 ```
 
-This populates the database with multiple habits and realistic historical logs.  
-**Note:** Intended for local testing only.
+Populates the database with realistic historical logs.  
+**Intended for local testing only.**
 
 ---
 
 ## 🔖 Versioning
 
-**Current Version:** v0.1.0
+**Current Version:** v0.4.0
 
-Includes:
-- Core habit tracking  
-- Persistent storage  
-- Streak and consistency metrics  
-- Tab-based UI (Overview | Analytics | History)  
-- Interactive data visualizations  
+### v0.4.0 Includes
+- Reflection notes (habit-per-day)  
+- Insight attribution using contextual notes  
+- Confidence thresholds for all insights  
+- Weekly / monthly analytics toggle  
+- Explainable analytics with transparent UX  
+- Global and per-habit CSV export  
 
----
-
-## 🚧 Planned Improvements
-
-- Global analytics across all habits  
-- Export logs and analytics as CSV  
-- Habit sorting and filtering  
-- Authentication & multi-user support  
-- Cloud database integration  
-- Advanced trend detection  
+Earlier versions focused on:
+- Tracking (v0.1)  
+- Analytics (v0.2)  
+- Interpretation (v0.3)  
 
 ---
 
 ## 🎯 What This Project Demonstrates
 
-- Practical Python application development  
-- Clean modular architecture  
-- Real-world state and persistence handling  
-- Data-driven feature design  
-- Visualization as insight, not decoration  
+- Clean, modular Python application design  
+- Relational data modeling with SQLite  
+- Responsible analytics and interpretation  
+- UI design that favors clarity over gamification  
+- Feature discipline and intentional versioning  
