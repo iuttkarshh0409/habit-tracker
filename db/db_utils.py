@@ -236,3 +236,31 @@ def archive_habit(habit_id):
     conn.commit()
     conn.close()
 
+def fetch_archived_habits():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT id, name, frequency, created_at
+        FROM habits
+        WHERE is_active = 0
+        ORDER BY created_at ASC
+    """)
+
+    rows = cursor.fetchall()
+    conn.close()
+    return rows
+
+def restore_habit(habit_id):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        UPDATE habits
+        SET is_active = 1
+        WHERE id = ?
+    """, (habit_id,))
+
+    conn.commit()
+    conn.close()
+

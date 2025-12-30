@@ -10,6 +10,8 @@ from db.db_utils import (
 )
 
 from services.habit_service import archive
+from db.db_utils import fetch_archived_habits
+from services.habit_service import restore
 from services.streak_service import get_current_streak
 from services.checkin_service import check_in_today
 from services.consistency_service import get_consistency_percentage
@@ -57,7 +59,8 @@ with tab_overview:
                 df_export.to_csv(index=False),
                 "habit_logs.csv",
                 "text/csv",
-                key="export_csv_btn"
+                key="export_csv_btn",
+                help="Export all your habit logs as a CSV file."
             )
 
     # Global stats (always 30 days)
@@ -125,12 +128,12 @@ with tab_overview:
             )
 
         with col2:
-            if st.button("✅", key=f"done_{habit_id}"):
+            if st.button("✅", key=f"done_{habit_id}", help="Mark as done for today"):
                 check_in_today(habit_id, True)
                 st.rerun()
 
         with col3:
-            if st.button("❌", key=f"miss_{habit_id}"):
+            if st.button("❌", key=f"miss_{habit_id}", help="Mark as missed for today"):
                 check_in_today(habit_id, False)
                 st.rerun()
 
@@ -142,14 +145,37 @@ with tab_overview:
                     df_habit.to_csv(index=False),
                     f"{name.replace(' ', '_').lower()}_history.csv",
                     "text/csv",
-                    key=f"export_habit_{habit_id}"
+                    key=f"export_habit_{habit_id}",
+                    help="Export this habit's logs as a CSV file."
                 )
 
         with col5:
-            if st.button("🗄️", key=f"archive_{habit_id}"):
+            if st.button("🗄️", key=f"archive_{habit_id}", help="Archive this habit"):
                 archive(habit_id)
                 st.success(f"Habit '{name}' archived")
                 st.rerun()
+
+
+    st.divider()
+
+archived = fetch_archived_habits()
+
+if archived:
+    with st.expander("🗄️ Archived Habits"):
+        st.caption("Archived habits are read-only. You can restore them anytime.")
+
+        for habit_id, name, _, _ in archived:
+            col1, col2 = st.columns([5, 1])
+
+            with col1:
+                st.write(f"**{name}**")
+
+            with col2:
+                if st.button("↩️ Restore", key=f"restore_{habit_id}"):
+                    restore(habit_id)
+                    st.success("Habit restored")
+                    st.rerun()
+
 
 # ================= ANALYTICS TAB =================
 with tab_analytics:
