@@ -1,3 +1,4 @@
+#--------------- IMPORTS -----------------
 import streamlit as st
 import pandas as pd
 
@@ -16,27 +17,29 @@ from services.streak_service import get_current_streak
 from services.checkin_service import check_in_today
 from services.consistency_service import get_consistency_percentage
 from services.global_analytics_service import get_global_stats
+
 from services.export_service import (
     export_logs_to_csv,
     export_habit_logs_to_csv
 )
+
 from visualizations.charts import (
     streak_timeline,
     weekly_completion,
     global_completion_trend
 )
+
 from services.insight_service import (
     generate_global_trend_insight,
     generate_insight_attribution,
     generate_weekday_weekend_insight,
     generate_habit_stability_insight
 )
+
 from services.reflection_service import (
     save_reflection,
     get_reflection
 )
-
-
 
 # ---------------- PAGE SETUP ----------------
 st.title("Habit Tracker")
@@ -49,7 +52,7 @@ habits = fetch_habits()
 
 # ================= OVERVIEW TAB =================
 with tab_overview:
-    # Export (top-left)
+    # Export 
     top_left, _ = st.columns([1, 5])
     with top_left:
         df_export = export_logs_to_csv()
@@ -63,7 +66,7 @@ with tab_overview:
                 help="Export all your habit logs as a CSV file."
             )
 
-    # Global stats (always 30 days)
+    # Global stats
     stats = get_global_stats()
     if stats:
         st.subheader("📊 Overall Insights")
@@ -81,6 +84,7 @@ with tab_overview:
             stats["longest_streak"],
             f'{stats["longest_streak_value"]} days'
         )
+
         st.divider()
 
     # Add habit
@@ -95,7 +99,7 @@ with tab_overview:
 
     st.divider()
 
-    # Sorting (Overview = 30-day logic)
+    # Sorting 
     st.subheader("Your Habits")
     sort_option = st.selectbox(
         "Sort habits by",
