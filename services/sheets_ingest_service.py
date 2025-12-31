@@ -3,7 +3,7 @@ from datetime import datetime
 
 SCRIPT_URL="https://script.google.com/macros/s/AKfycbxpGSx9AMYIkf3t_41jA_YPHXVT7kMMjQH9KB9IMApVfdGXdSYjOXRKtRbUAxSMeDG2/exec"
 
-def send_to_sheet(row):
+def send_row_to_sheet(row):
     payload = {
         "export_timestamp": datetime.utcnow().isoformat(),
         "user_id": row["user_id"],

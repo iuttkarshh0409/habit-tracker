@@ -1,4 +1,6 @@
 #--------------- IMPORTS -----------------
+from services.sheets_ingest_service import send_row_to_sheet
+from datetime import date
 import streamlit as st
 import pandas as pd
 
@@ -9,7 +11,7 @@ from db.db_utils import (
     fetch_logs_for_habit,
     fetch_daily_completion_rate
 )
-
+from services.row_builder_service import build_row
 from services.habit_service import archive
 from db.db_utils import fetch_archived_habits
 from services.habit_service import restore
@@ -134,11 +136,27 @@ with tab_overview:
         with col2:
             if st.button("✅", key=f"done_{habit_id}", help="Mark as done for today"):
                 check_in_today(habit_id, True)
+
+                row = build_row(
+                habit_id=habit_id,
+                habit_name=name,
+                status=1,
+                date=date.today().isoformat()
+             )
+                send_row_to_sheet(row)
                 st.rerun()
 
         with col3:
             if st.button("❌", key=f"miss_{habit_id}", help="Mark as missed for today"):
                 check_in_today(habit_id, False)
+
+                row = build_row(
+                habit_id=habit_id,
+                habit_name=name,
+                status=0,
+                date=date.today().isoformat()
+                )
+                send_row_to_sheet(row)  
                 st.rerun()
 
         with col4:

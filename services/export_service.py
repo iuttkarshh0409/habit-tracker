@@ -17,14 +17,14 @@ def export_logs_to_csv():
     -- Consistency snapshots
     (
         SELECT ROUND(AVG(l2.status) * 100, 1)
-        FROM habit_logs l2
+        FROM logs l2
         WHERE l2.habit_id = h.id
           AND l2.date BETWEEN DATE(l.date, '-6 days') AND l.date
     ) AS consistency_7d,
 
     (
         SELECT ROUND(AVG(l3.status) * 100, 1)
-        FROM habit_logs l3
+        FROM logs l3
         WHERE l3.habit_id = h.id
           AND l3.date BETWEEN DATE(l.date, '-29 days') AND l.date
     ) AS consistency_30d,
@@ -32,7 +32,7 @@ def export_logs_to_csv():
     -- Streak up to that date
     (
         SELECT COUNT(*)
-        FROM habit_logs s
+        FROM logs s
         WHERE s.habit_id = h.id
           AND s.status = 1
           AND s.date <= l.date
@@ -41,7 +41,7 @@ def export_logs_to_csv():
                   MAX(m.date),
                   '1970-01-01'
               )
-              FROM habit_logs m
+              FROM logs m
               WHERE m.habit_id = h.id
                 AND m.status = 0
                 AND m.date < l.date
@@ -54,7 +54,7 @@ def export_logs_to_csv():
         ELSE 0
     END AS has_reflection
 
-FROM habit_logs l
+FROM logs l
 JOIN habits h ON h.id = l.habit_id
 LEFT JOIN reflection_notes r
     ON r.habit_id = l.habit_id
@@ -93,3 +93,17 @@ ORDER BY h.id, l.date;
     df["has_reflection"] = df["has_reflection"].astype(int)
 
     return df
+
+def export_habit_logs_to_csv(habit_id):
+    df = export_logs_to_csv()
+
+    if df is None:
+        return None
+
+    habit_df = df[df["habit_id"] == habit_id].copy()
+
+    if habit_df.empty:
+        return None
+
+    return habit_df
+
